@@ -25,7 +25,7 @@ const getListOfProduct = async (page) => {
     
     } catch (e) {
         console.error(e);
-        return { success: false };
+        return { success: false, message: e.message };
     }
 
     return { success: true, products };
@@ -33,7 +33,6 @@ const getListOfProduct = async (page) => {
 
 const scrape = async (page, productslink) => {
     const productData = [DataInfo];
-    let jsonData;
     
     for (const link of productslink) {
         try {
@@ -69,14 +68,40 @@ const scrape = async (page, productslink) => {
 
 
 async function runScraper(url) {
-
-    const driver = configPuppeteer(url);
+    let driver;
+    let data;
 
     try {
-        
-    } catch (e) {
+        driver = await configPuppeteer(url);
+        if (!driver.success) 
+            throw new Error(`Falha ao obter o navegador do puppeteer.`);
 
+        const resultList = await getListOfProduct(driver.page);
+        if (!resultList.success)
+            throw new Error(`Falha ao obter lista de itens: \n${resultList.message}`);
+
+        const productList = resultList.products;
+        const rawData = await scrape(driver.page, productList);
+
+        if (!rawData || !rawData.success)
+            throw new Error(rawData.message || `Não foi possível obter os dados da raspagem.`);
+
+        data = rawData.productData;
+    } catch (e) {
+        console.error(`Falha na raspagem: \n${e.message}`);
+        return { success: false, message: `Não foi possível obteros dados da raspagem.` };
     }
+    finally {
+        await driver.browser.close();
+    }
+
+    if (!data)
+        return { success: false, message: `Não foi possível obteros dados da raspagem.` };
+
+    return {
+        success: true,
+        result: JSON.parse(data),
+    };
 }
 
 module.exports = {
