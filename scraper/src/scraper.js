@@ -1,5 +1,8 @@
 const puppeteer = require('puppeteer');
+const { configPuppeteer } = require('./components/Driver');
 const { DataInfo } = require('./dto/dataInfoDto');
+
+require('dotenv').config();
 
 function randomDelay(max, min) {
     const time = Math.random() * (max - min) + min;
@@ -64,7 +67,18 @@ const scrape = async (page, productslink) => {
     };
 };
 
+
+async function runScraper(url) {
+
+    const driver = configPuppeteer(url);
+
+    try {
+        
+    } catch (e) {
+
+    }
+}
+
 module.exports = {
-    getListOfProduct,
-    scrape
+    runScraper
 };

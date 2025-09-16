@@ -13,7 +13,7 @@ const configPuppeteer = async (url) => {
 
         return { success: true, browser, page};
     } catch (e) {
-        return { success: false };
+        return { success: false, browser: null, page: null };
     }
 };
 
