@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const { DataInfo } = require('./dto/dataInfoDto');
 
 function randomDelay(max, min) {
     const time = Math.random() * (max - min) + min;
@@ -28,17 +29,42 @@ const getListOfProduct = async (page) => {
 };
 
 const scrape = async (page, productslink) => {
-    const productData = [];
+    const productData = [DataInfo];
+    let jsonData;
     
     for (const link of productslink) {
         try {
             console.log(`Acessando produto: ${link}`);
             await page.goto(link, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
-            const table = await page.locator();
+            const table = await page.locator('table.table.table-specification');
+
+            const mark = table.querySelector('td.value-field.Marca').innerText;
+            const model = table.querySelector('td.value-field.Modelo').innerText;
+            const cpu = table.querySelector('td.value-field.Processador').innerText;
+            const mem = table.querySelector('td.value-field.Memoria').innerText;
+            const storage = table.querySelector('td.value-field.Armazenamento').innerText;
+
+            productData.push(new DataInfo(mark, model, cpu, mem, storage));
 
         } catch (e) {
             console.error(`Falha em ${link}: \n${e}`);
         }
+
+        console.log("Aguardando para a próxima requisição...");
+        await delay(2000, 5000);
     }
+
+    if (!productData || productData.length == 0)
+        return { success: false, message: 'Não foi possível obter os dados dos produtos' };
+
+    return {
+        success: true,
+        productData
+    };
+};
+
+module.exports = {
+    getListOfProduct,
+    scrape
 };
