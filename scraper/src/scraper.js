@@ -49,7 +49,8 @@ const scrape = async (page, productslink) => {
             await page.goto(link, { waitUntil: 'networkidle2', timeout: 60000 });
 
             const table = await page.$('table.table.table-specification');
-
+            
+            const price = await page.$eval('div[class*="priceButton"] div[class$="price_vista"]', el => el.innerText);
             const mark = await table.$eval('td.value-field.Marca', el => el.innerText);
             const model = await table.$eval('td.value-field.Modelo', el => el.innerText);
             const cpu = await table.$eval('td.value-field.Processador', el => el.innerText);
@@ -57,7 +58,7 @@ const scrape = async (page, productslink) => {
             const storage = await table.$eval('td.value-field.Armazenamento', el => el.innerText);
 
 
-            productData.push(new DataInfo(mark, model, cpu, mem, storage));
+            productData.push(new DataInfo(mark, model, cpu, mem, storage, price));
 
         } catch (e) {
             console.error(`Falha em ${link}: \n${e}`);
