@@ -35,6 +35,7 @@ ipython_config.py
 # --- Node.js ---
 # Dependências
 /node_modules/
+node_modules
 
 # Logs de depuração
 npm-debug.log*
