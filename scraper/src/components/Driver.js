@@ -1,0 +1,23 @@
+const puppeteer = require('puppeteer');
+
+const configPuppeteer = async (url) => {
+    try {
+        const browser = await puppeteer.launch({
+            headless: "new",
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
+        const page = await browser.newPage();
+
+        await page.goto(url);
+        await page.setViewport({ width: 1080, height: 1024 });
+
+        return { success: true, page, browser };
+    } catch (e) {
+        console.error(`Falha ao iniciar o navegador: \n${e}`);
+        return { success: false };
+    }
+};
+
+module.exports = {
+    configPuppeteer,
+};
