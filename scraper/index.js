@@ -13,5 +13,9 @@ scraper.runScraper(target).then(data => {
     }
 
     console.log('dados obtidos:');
-    console.log(data.result);
+    
+    for (const info of data.result)
+    {
+        console.log(info);
+    }
 });

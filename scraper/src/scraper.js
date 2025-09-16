@@ -10,22 +10,22 @@ function randomDelay(max, min) {
 }
 
 const getListOfProduct = async (page) => {
-    const products = [];
+    let products = [];
 
     try {
-        const productsContainer = await page.locator('div.MuiGrid2-root.MuiGrid2-container.MuiGrid2-direction-direction-xs-row.MuiGrid2-spacing-xs-3.mui-dlvf66-listAndFilter a[data-cy="list-product"]');
+        await randomDelay(8000, 8000);
+        await page.waitForFunction(() => {
+            return document.querySelectorAll('a[data-cy="list-product"]').length > 0;
+        }, { timeout: 60000 });
 
-        for (const productLink of await productsContainer.all()) {
-            let link = await productLink.getAttribute('href');
+        const productsLink = await page.$$eval('a[data-cy="list-product"]', els =>
+            els.map(a => a.getAttribute('href'))
+        );
 
-            if (link && !link.startsWith('http')) {
-                const baseUrl = new URL(page.url()).origin;
-                products.push(`${baseUrl}${link}`);
-            }
-            else if (link) {
-                products.push(link);
-            }
-        }
+        const baseUrl = new URL(page.url()).origin;
+        products = productsLink.map(link =>
+        link.startsWith('http') ? link : `${baseUrl}${link}`
+        );
 
         if (!products || products.length == 0)
             throw new Error(`A lista de produtos estava vazia.`);
@@ -35,24 +35,27 @@ const getListOfProduct = async (page) => {
         return { success: false, message: e.message };
     }
 
+    console.log(products);
+
     return { success: true, products };
 };
 
 const scrape = async (page, productslink) => {
-    const productData = [DataInfo];
+    const productData = [];
     
     for (const link of productslink) {
         try {
             console.log(`Acessando produto: ${link}`);
-            await page.goto(link, { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.goto(link, { waitUntil: 'networkidle2', timeout: 60000 });
 
-            const table = await page.locator('table.table.table-specification');
+            const table = await page.$('table.table.table-specification');
 
-            const mark = await table.locator('td.value-field.Marca').innerText;
-            const model = await table.locator('td.value-field.Modelo').innerText;
-            const cpu = await table.locator('td.value-field.Processador').innerText;
-            const mem = await table.locator('td.value-field.Memoria').innerText;
-            const storage = await table.locator('td.value-field.Armazenamento').innerText;
+            const mark = await table.$eval('td.value-field.Marca', el => el.innerText);
+            const model = await table.$eval('td.value-field.Modelo', el => el.innerText);
+            const cpu = await table.$eval('td.value-field.Processador', el => el.innerText);
+            const mem = await table.$eval('td.value-field.Memoria', el => el.innerText);
+            const storage = await table.$eval('td.value-field.Armazenamento', el => el.innerText);
+
 
             productData.push(new DataInfo(mark, model, cpu, mem, storage));
 
@@ -61,7 +64,7 @@ const scrape = async (page, productslink) => {
         }
 
         console.log("Aguardando para a próxima requisição...");
-        await randomDelay(2000, 5000);
+        await randomDelay(5000, 10000);
     }
 
     if (!productData || productData.length == 0)
@@ -95,11 +98,11 @@ async function runScraper(url) {
 
         data = rawData.productData;
     } catch (e) {
-        console.error(`Falha na raspagem: \n${e.message}`);
-        return { success: false, message: `Não foi possível obter os dados da raspagem.` };
+        return { success: false, message: `Não foi possível obter os dados da raspagem: ${e}` };
     }
     finally {
-        await driver.browser.close();
+        if (driver && driver.browser)
+            await driver.browser.close();
     }
 
     if (!data)
@@ -107,7 +110,7 @@ async function runScraper(url) {
 
     return {
         success: true,
-        result: JSON.parse(data),
+        result: data,
     };
 }
 
