@@ -13,11 +13,18 @@ const getListOfProduct = async (page) => {
     const products = [];
 
     try {
-        const productsContainer = await page.locator('div.MuiGrid2-root.MuiGrid2-container.MuiGrid2-direction-direction-xs-row.MuiGrid2-spacing-xs-3.mui-dlvf66-listAndFilter');
+        const productsContainer = await page.locator('div.MuiGrid2-root.MuiGrid2-container.MuiGrid2-direction-direction-xs-row.MuiGrid2-spacing-xs-3.mui-dlvf66-listAndFilter a[data-cy="list-product"]');
 
-        for (const product of await productsContainer.all()) {
-            const productLink = await product.locator('a.list-product').getAttribute('href');
-            products.push(productLink);
+        for (const productLink of await productsContainer.all()) {
+            let link = await productLink.getAttribute('href');
+
+            if (link && !link.startsWith('http')) {
+                const baseUrl = new URL(page.url()).origin;
+                products.push(`${baseUrl}${link}`);
+            }
+            else if (link) {
+                products.push(link);
+            }
         }
 
         if (!products || products.length == 0)
@@ -41,11 +48,11 @@ const scrape = async (page, productslink) => {
 
             const table = await page.locator('table.table.table-specification');
 
-            const mark = table.querySelector('td.value-field.Marca').innerText;
-            const model = table.querySelector('td.value-field.Modelo').innerText;
-            const cpu = table.querySelector('td.value-field.Processador').innerText;
-            const mem = table.querySelector('td.value-field.Memoria').innerText;
-            const storage = table.querySelector('td.value-field.Armazenamento').innerText;
+            const mark = await table.locator('td.value-field.Marca').innerText;
+            const model = await table.locator('td.value-field.Modelo').innerText;
+            const cpu = await table.locator('td.value-field.Processador').innerText;
+            const mem = await table.locator('td.value-field.Memoria').innerText;
+            const storage = await table.locator('td.value-field.Armazenamento').innerText;
 
             productData.push(new DataInfo(mark, model, cpu, mem, storage));
 
@@ -89,7 +96,7 @@ async function runScraper(url) {
         data = rawData.productData;
     } catch (e) {
         console.error(`Falha na raspagem: \n${e.message}`);
-        return { success: false, message: `Não foi possível obteros dados da raspagem.` };
+        return { success: false, message: `Não foi possível obter os dados da raspagem.` };
     }
     finally {
         await driver.browser.close();
