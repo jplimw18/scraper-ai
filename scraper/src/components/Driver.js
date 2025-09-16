@@ -13,7 +13,6 @@ const configPuppeteer = async (url) => {
 
         return { success: true, browser, page};
     } catch (e) {
-        console.error(`Falha ao iniciar o navegador: \n${e}`);
         return { success: false };
     }
 };

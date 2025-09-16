@@ -52,7 +52,7 @@ const scrape = async (page, productslink) => {
         }
 
         console.log("Aguardando para a próxima requisição...");
-        await delay(2000, 5000);
+        await randomDelay(2000, 5000);
     }
 
     if (!productData || productData.length == 0)
