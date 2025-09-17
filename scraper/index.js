@@ -1,21 +1,30 @@
 
-const scraper = require('./src/scraper');
+const { runScraper } = require('./src/scraper');
+const { postScrapedData } = require('./src/apiClient');
+const { sanitizeUrl } = require('./src/util/SanitizeUrl');
 require('dotenv').config();
 
-const target = process.env.TARGET_URL;
-console.log(target);
-
-scraper.runScraper(target).then(data => {
-    if (!data  || !data.success)
-    {
-        console.error(data.message || `Falha ao obter dados: Um erro inesperado aconteceu.`);
+async function run() {
+    const target = sanitizeUrl(process.env.TARGET_URL);
+    console.log(target);
+    
+    const scraperResult = await runScraper(target);
+    if (!scraperResult || !scraperResult.success) {
+        console.error(scraperResult.message || 'Ocorreu um error inesperado com o scraper.');
         return;
     }
 
-    console.log('dados obtidos:');
-    
-    for (const info of data.result)
-    {
-        console.log(info);
+    const data = scraperResult.result;
+    console.log(`Raspagem realizada com sucesso: ${data.length} objetos obtidos.`);
+
+    const sendResult = await postScrapedData(data);
+
+    if (!sendResult || !sendResult.success) {
+        console.error(sendResult.message || 'Ocorreu um erro inesperado ao tentar enviar os dados para a API.');
+        return;
     }
-});
+
+    console.log(`dados enviados. Resposta da API: ${sendResult.message}`);
+}
+
+run();

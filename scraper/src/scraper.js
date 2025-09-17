@@ -1,13 +1,11 @@
 const puppeteer = require('puppeteer');
 const { configPuppeteer } = require('./components/Driver');
+const driverTeste = require('./components/DriverTeste');
+const { randomDelay } = require('../src/util/Delay');
 const { DataInfo } = require('./dto/dataInfoDto');
 
 require('dotenv').config();
 
-function randomDelay(max, min) {
-    const time = Math.random() * (max - min) + min;
-    return new Promise(resolve => setTimeout(resolve, time));
-}
 
 const getListOfProduct = async (page) => {
     let products = [];
@@ -83,9 +81,10 @@ async function runScraper(url) {
     let data;
 
     try {
-        driver = await configPuppeteer(url);
+        // driver = await configPuppeteer(url);
+        driver = await driverTeste.configPuppeteer(url);
         if (!driver.success) 
-            throw new Error(`Falha ao obter o navegador do puppeteer.`);
+            throw new Error(`Falha ao obter o navegador do puppeteer: ${driver.message}`);
 
         const resultList = await getListOfProduct(driver.page);
         if (!resultList.success)
