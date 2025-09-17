@@ -8,7 +8,7 @@ async function run() {
     const target = sanitizeUrl(process.env.TARGET_URL);
     console.log(target);
     
-    const scraperResult = await runScraper(target);
+    const scraperResult = await runScraper(target, { test: false, headless: true });
     if (!scraperResult || !scraperResult.success) {
         console.error(scraperResult.message || 'Ocorreu um error inesperado com o scraper.');
         return;

@@ -54,11 +54,11 @@ const configPuppeteer = async (url, headless = false) => {
     let browser = null;
 
     try {
-        const execPath = getChromeExecutable();
+        // const execPath = getChromeExecutable();
 
         browser = await puppeteer.launch({
-            executablePath: execPath,
-            headless: "new",
+            // executablePath: execPath,
+            headless: headless ? "new" : headless,
             defaultViewport: null,
             args: [
                 '--no-sandbox',

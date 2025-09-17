@@ -76,13 +76,13 @@ const scrape = async (page, productslink) => {
 };
 
 
-async function runScraper(url) {
+async function runScraper(url, options = {} ) {
     let driver;
     let data;
 
+    let { test = false, headless = false } = options;
     try {
-        // driver = await configPuppeteer(url);
-        driver = await driverTeste.configPuppeteer(url);
+        driver = !test ? await configPuppeteer(url, headless) : await driverTeste.configPuppeteer(url);
         if (!driver.success) 
             throw new Error(`Falha ao obter o navegador do puppeteer: ${driver.message}`);
 
