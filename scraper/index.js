@@ -1,6 +1,6 @@
 
 const { runScraper } = require('./src/scraper');
-const { postScrapedData } = require('./src/apiClient');
+const { postScrapedData, readRoot } = require('./src/apiClient');
 const { sanitizeUrl } = require('./src/util/SanitizeUrl');
 require('dotenv').config();
 
@@ -16,6 +16,13 @@ async function run() {
 
     const data = scraperResult.result;
     console.log(`Raspagem realizada com sucesso: ${data.length} objetos obtidos.`);
+
+    console.log('Testando conexão com a API...');
+    const { success, message } = await readRoot();
+    if (!success) {
+        console.error(message);
+        return;
+    }
 
     const sendResult = await postScrapedData(data);
 

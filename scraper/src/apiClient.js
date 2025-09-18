@@ -13,11 +13,41 @@ const apiClient = axios.create({
 
 
 /**
+ * @returns {Promise<{success: boolean, message: String }>}
+ */
+async function readRoot() {
+    const endpoint = '/';
+
+    console.log('Enviando requisição de teste para conferir status da api...');
+
+    try {
+        const response = await apiClient.get(endpoint);
+        console.log(response.data);
+        return { success: true };
+    } catch (error) {
+        console.error('Falha ao enviar requisição para API');
+
+        if (error.response) {
+            console.error(`error status: ${error.response.status}`);
+            console.error(`error data: ${error.response.data}`);
+
+            return { success: false, message: `Erro da API: ${error.response.data.message}` };
+        } else if (error.request) {
+            console.error(`A requisição não obteve nenhum retorno: ${error.request}`);
+            return { success: false, message: 'A API não retornou respostas.' };
+        }
+
+        console.error('Erro de configuração');
+        return { success: false, message: `Erro de configuração da requisição: ${error.message}` };
+    }
+}
+
+/**
  * @param {Array<Object>}
  * @returns {Promise<{success: boolean, message: String}>}
  */
 async function postScrapedData(data) {
-    const endpoint = '/ingest';
+    const endpoint = '/api/ingest';
 
     console.log(`Enviando ${data.length} para a API em ${apiClient.defaults.baseURL}${endpoint}`);
 
@@ -45,4 +75,5 @@ async function postScrapedData(data) {
 
 module.exports = {
     postScrapedData,
+    readRoot
 };
