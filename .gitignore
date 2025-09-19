@@ -3,6 +3,7 @@
 
 # --- Python ---
 # Ambientes virtuais
+.venv
 /venv/
 /env/
 /.venv/
