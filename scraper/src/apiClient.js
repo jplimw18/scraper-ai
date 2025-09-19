@@ -58,18 +58,11 @@ async function postScrapedData(data) {
         return { success: true, message: 'Envio realizado com sucesso.' };
     } catch (error) {
         console.error('Falha ao enviar para a API');
-
-        if (error.response) {
-            console.error(`error status: ${error.response.status}`);
-            console.error(`error data: ${error.response.data}`);
-            return { success: false, message: `Erro da API: ${error.response.data.message}` };
-        } else if (error.request) {
-            console.error(`A requisição não obteve nenhum retorno: ${error.request}`);
-            return { success: false, message: 'A API não retornou respostas.' };
-        }
-
-        console.error('Erro de configuração');
-        return { success: false, message: `Erro de configuração da requisição: ${error.message}` };
+        
+        for (const e in error)
+            console.log(e);
+        
+        return { success: false, message: `Erro de configuração da requisição` };
     }
 }
 

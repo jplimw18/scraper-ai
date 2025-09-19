@@ -12,7 +12,7 @@ app = FastAPI(
 )
 
 @app.get("/", tags=["Root"])
-async def read_root():
+async def read_root(api_key: str = Depends(get_api_key)):
     return { "message": "The prediction API is online" }
 
 @app.post(
@@ -27,5 +27,21 @@ async def ingest_data(products: List[ProductData], api_key: str = Depends(get_ap
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The product list cannot not be empty"
         )
+
     
+    try:
+        products_dict = [p.model_dump() for p in products]
+        result = data_collection.insert_many(products_dict)
+
+        return {
+            "message": "Data received",
+            "inserted_count": len(result.inserted_ids)
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+
+
     return { "message": "Ok, data received" }
